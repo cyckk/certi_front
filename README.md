@@ -1,2 +1,2 @@
 # certi_front
-Forntend for Certification genereation 
+Forntend for Certificate generation 
