@@ -85,7 +85,9 @@
 </template>
 <script>
 // import Notify from '@/components/Notify.vue';
-import Vue from 'vue';
+// import Vue from 'vue';
+import jwt_decode from 'jwt-decode';
+
 import { mapActions } from 'vuex';
 
 export default {
@@ -107,15 +109,8 @@ export default {
 
   methods: {
     ...mapActions('userStore', ['login']),
-    // togglePassword() {
-    //   let passwordField = document.querySelectorAll('.password');
-    //   console.log(passwordField);
-    //   passwordField.forEach(field => {
-    //     console.log(typeof field);
-    //     if (field.type == 'password') field.setAttribute('type', 'text');
-    //     else field.setAttribute('type', 'password');
-    //   });
-    // },
+    ...mapActions('app', ['saveLog']),
+
     toggleLogin() {
       this.showLogin = !this.showLogin;
     },
@@ -126,6 +121,23 @@ export default {
       });
 
       console.log(response);
+
+      const id = jwt_decode(localStorage.getItem('token')).id;
+      console.log('userid ', id);
+
+      const log = {
+        to: id,
+        from: id,
+        type: 'user',
+        message: `<a class="message-from" href="${
+          window.location.href.split(window.location.pathname)[0]
+        }/profile/${this.$store.state.userStore.userProfile.id}">${
+          this.$store.state.userStore.userProfile.name
+        }</a> Logged In`,
+      };
+
+      this.saveLog(log);
+
       if (response !== '')
         this.$q.notify({
           type: 'negative',
@@ -136,14 +148,6 @@ export default {
           type: 'positive',
           message: `Logged In`,
         });
-    },
-    async signUp() {
-      let response = await this.$store.dispatch('signUp', {
-        email: this.registerForm.email,
-        name: this.registerForm.name,
-        password: this.registerForm.password,
-      });
-      if (response !== '') this.notify(response, 'red');
     },
 
     togglePasswordReset() {
