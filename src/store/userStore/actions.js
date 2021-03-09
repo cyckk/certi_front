@@ -19,12 +19,15 @@ export async function login({ dispatch }, payload) {
     });
     console.log(response);
     localStorage.setItem('token', 'Bearer' + ' ' + response.data.token);
+
+    // await dispatch('app','saveLog',{})
+    console.log(localStorage.getItem('token'));
     await dispatch('getUser');
     router.push('/');
 
     return '';
   } catch (err) {
-    // console.log(err.response.data.message);
+    console.log(err.response.data.message);
 
     return err.response ? err.response.data.message : err.message;
   }

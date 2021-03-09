@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
+import app from './app';
 import userStore from './userStore';
 
 Vue.use(Vuex);
@@ -30,6 +31,7 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   modules: {
+    app,
     userStore,
   },
 

@@ -15,7 +15,10 @@
           <div>Certificate</div>
         </q-btn>
 
-        <q-btn :to="{ name: 'Students' }" color="teal">
+        <q-btn
+          @click="setNavigationAndPushRoute('student', { name: 'Students' })"
+          color="teal"
+        >
           <q-icon left size="3em" name="map" />
           <div>Students</div>
         </q-btn>
@@ -33,7 +36,17 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
+
 export default {
   name: 'PageIndex',
+
+  methods: {
+    ...mapActions('app', ['setNavigationType']),
+    setNavigationAndPushRoute(type, route) {
+      this.setNavigationType(type);
+      this.$router.push(route);
+    },
+  },
 };
 </script>
