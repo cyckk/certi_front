@@ -16,12 +16,10 @@
           <!-- {{ getUserDetails }} -->
         </q-toolbar-title>
 
-        <q-btn-dropdown flat :label="getUserDetails.name">
+        <q-btn-dropdown flat :label="getUserDetails.name" auto-close>
           <div class="row no-wrap q-pa-md">
             <div class="column">
               <div class="text-h6 q-mb-md">Settings</div>
-              <!-- <q-toggle v-model="mobileData" label="Use Mobile Data" />
-          <q-toggle v-model="bluetooth" label="Bluetooth" /> -->
 
               <q-btn
                 @click="showPasswordUpdate = true"
@@ -29,6 +27,17 @@
                 style="color: #108940"
                 label="Update Password?"
                 class="q-pl-0"
+                no-caps
+                padding="0 0"
+              />
+
+              <q-btn
+                :to="{ name: 'Profile' }"
+                flat
+                style="color: #879902"
+                color="primary"
+                label="Profile"
+                class="q-pl-0 q-mt-sm"
                 no-caps
                 padding="0 0"
               />
@@ -60,6 +69,7 @@
     </q-header>
 
     <q-drawer
+      v-if="signedIn"
       v-model="leftDrawerOpen"
       show-if-above
       bordered
@@ -143,58 +153,49 @@
 import { mapGetters, mapActions } from 'vuex';
 import EssentialLink from 'components/EssentialLink.vue';
 
-const linksData = [
+const courseLinks = [
   {
-    title: 'Docs',
+    title: 'Dashboard',
     caption: 'quasar.dev',
     icon: 'school',
-    link: 'https://quasar.dev',
+    link: 'DashBoard',
+  },
+];
+
+//Navigation links for student
+const studentsLinks = [
+  {
+    title: 'DashBoard',
+    caption: 'quasar.dev',
+    icon: 'dashboard',
+    link: 'DashBoard',
   },
   {
-    title: 'Github',
+    title: 'Students',
     caption: 'github.com/quasarframework',
     icon: 'code',
-    link: 'https://github.com/quasarframework',
+    link: 'Students',
   },
   {
-    title: 'Discord Chat Channel',
+    title: 'Batches',
     caption: 'chat.quasar.dev',
     icon: 'chat',
     link: 'https://chat.quasar.dev',
   },
   {
-    title: 'Forum',
+    title: 'Courses',
     caption: 'forum.quasar.dev',
     icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
+    link: 'Courses',
   },
 ];
-
 export default {
   name: 'MainLayout',
   components: { EssentialLink },
   data() {
     return {
       leftDrawerOpen: false,
-      essentialLinks: linksData,
+      // essentialLinks: studentsLinks,
       user: null,
 
       showPasswordUpdate: false,
@@ -217,6 +218,11 @@ export default {
     },
 
     async updatePassword() {
+      if (!this.oldPassword && !this.password && !this.cnfPassword)
+        return this.$q.notify({
+          type: 'negative',
+          message: `Please enter your password`,
+        });
       if (this.password !== this.cnfPassword)
         return this.$q.notify({
           type: 'negative',
@@ -227,6 +233,22 @@ export default {
         oldPassword: this.oldPassword,
         newPassword: this.password,
       });
+
+      const id = jwt_decode(localStorage.getItem('token')).id;
+      console.log('userid ', id);
+
+      const log = {
+        to: id,
+        from: id,
+        type: 'user',
+        message: `<a class="message-from" href="${
+          window.location.href.split(window.location.pathname)[0]
+        }/profile/${this.$store.state.userStore.userProfile.id}">${
+          this.$store.state.userStore.userProfile.name
+        }</a> Updated password`,
+      };
+
+      this.saveLog(log);
 
       if (response !== '')
         this.$q.notify({
@@ -248,8 +270,14 @@ export default {
   },
   computed: {
     ...mapGetters('userStore', ['getUserDetails']),
+    ...mapGetters('app', ['navigationType']),
+
     signedIn() {
       return this.getUserDetails ? true : false;
+    },
+
+    essentialLinks() {
+      return this.navigationType == 'student' ? studentsLinks : courseLinks;
     },
 
     // userDetails() {
@@ -257,8 +285,8 @@ export default {
     // },
   },
 
-  mounted() {
-    this.getUser();
+  async mounted() {
+    await this.getUser();
   },
 };
 </script>
