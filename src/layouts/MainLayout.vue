@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated v-if="signedIn">
+    <q-header elevated v-if="signedIn && !noHeader">
       <q-toolbar>
         <q-btn
           flat
@@ -12,7 +12,7 @@
         />
 
         <q-toolbar-title>
-          Certificate Generator
+          Xyzz
           <!-- {{ getUserDetails }} -->
         </q-toolbar-title>
 
@@ -69,7 +69,7 @@
     </q-header>
 
     <q-drawer
-      v-if="signedIn"
+      v-if="signedIn && !noHeader"
       v-model="leftDrawerOpen"
       show-if-above
       bordered
@@ -77,7 +77,7 @@
     >
       <q-list>
         <q-item-label header class="text-grey-8">
-          Essential Links
+          Navigation
         </q-item-label>
         <EssentialLink
           v-for="link in essentialLinks"
@@ -156,8 +156,8 @@ import EssentialLink from 'components/EssentialLink.vue';
 const courseLinks = [
   {
     title: 'Dashboard',
-    caption: 'quasar.dev',
-    icon: 'school',
+
+    icon: 'dashboard',
     link: 'DashBoard',
   },
 ];
@@ -166,25 +166,25 @@ const courseLinks = [
 const studentsLinks = [
   {
     title: 'DashBoard',
-    caption: 'quasar.dev',
+
     icon: 'dashboard',
     link: 'DashBoard',
   },
   {
     title: 'Students',
-    caption: 'github.com/quasarframework',
+
     icon: 'code',
     link: 'Students',
   },
   {
     title: 'Batches',
-    caption: 'chat.quasar.dev',
+
     icon: 'chat',
-    link: 'https://chat.quasar.dev',
+    link: 'Batches',
   },
   {
     title: 'Courses',
-    caption: 'forum.quasar.dev',
+
     icon: 'record_voice_over',
     link: 'Courses',
   },
@@ -195,6 +195,7 @@ export default {
   data() {
     return {
       leftDrawerOpen: false,
+      noHeader: false,
       // essentialLinks: studentsLinks,
       user: null,
 
@@ -277,16 +278,34 @@ export default {
     },
 
     essentialLinks() {
-      return this.navigationType == 'student' ? studentsLinks : courseLinks;
+      return this.$route.path.includes('/students')
+        ? studentsLinks
+        : courseLinks;
     },
+
+    // noHeader() {
+    //   return this.$route.meta.noHeader;
+    // },
 
     // userDetails() {
     //   return this.getUserDeatils;
     // },
   },
 
+  watch: {
+    // noHeader() {
+    //   return this.$route.meta.noHeader;
+    // },
+
+    $route() {
+      this.noHeader = this.$route.meta.noHeader;
+    },
+  },
+
   async mounted() {
-    await this.getUser();
+    // if (localStorage.getItem('token')) await this.getUser();
+    console.log(this.$route);
+    // this.noHeader = this.$route.meta.noHeader;
   },
 };
 </script>
