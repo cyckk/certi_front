@@ -3,7 +3,7 @@
     <!-- Skeleton -->
     <div class="col-12 col-md-9 q-pa-md" v-if="!loaded">
       <div class="row justify-between items-center q-mb-lg">
-        <q-skeleton class="col-9" type="QInput" height="35px" />
+        <q-skeleton class="col-7" type="QInput" height="35px" />
         <q-skeleton type="QBtn" />
         <q-skeleton type="QBtn" />
       </div>
@@ -30,37 +30,35 @@
           </template>
         </q-input>
         <q-btn
-          @click="showDisabledCourses = !showDisabledCourses"
+          @click="showDisabledBatches = !showDisabledBatches"
           color="secondary"
           :label="
-            showDisabledCourses
-              ? 'Show Active Courses'
-              : 'Show Disabled Courses'
+            showDisabledBatches
+              ? 'Show Active Batches'
+              : 'Show Disabled Batches'
           "
           no-caps
         ></q-btn>
         <q-btn
-          v-if="currentUserPermissions.includes('8')"
+          v-if="currentUserPermissions.includes('12')"
           color="primary"
-          label="Add Course"
+          label="Add Batch"
           @click="selectIdAndPrompt('', 'add', {})"
           no-caps
         ></q-btn>
       </div>
-
-      <!-- {{ filteredCourses }} -->
       <q-list bordered class=" row-reverse justify-between bg-grey-3">
         <div>
-          <q-item clickable v-ripple>
+          <q-item clickable v-ripple class="text-bold">
             <q-item-section avatar>
               #
             </q-item-section>
 
-            <q-item-section>Course Type</q-item-section>
+            <q-item-section>Batch</q-item-section>
 
             <q-item-section>Course Name</q-item-section>
 
-            <q-item-section>Course Duration</q-item-section>
+            <q-item-section>Status</q-item-section>
 
             <q-item-section class="text-center">Students</q-item-section>
 
@@ -68,24 +66,24 @@
           </q-item>
           <q-separator></q-separator>
         </div>
-        <div v-if="!filteredCourses.length" class="text-center q-mt-lg">
-          No Courses Available
+        <div v-if="!filteredBatches.length" class="text-center q-mt-lg">
+          No Batches Available
         </div>
-        <div v-else-if="!showDisabledCourses">
-          <div v-for="(course, index) in filteredCourses" :key="index">
+        <div v-else-if="!showDisabledBatches">
+          <div v-for="(batch, index) in filteredBatches" :key="index">
             <q-item>
               <q-item-section avatar>
                 {{ index + 1 }}
               </q-item-section>
 
-              <q-item-section>{{ course.type }}</q-item-section>
+              <q-item-section>{{ batch.batch_name }}</q-item-section>
 
-              <q-item-section>{{ course.specialization }}</q-item-section>
+              <q-item-section>{{ batch.course_specialization }}</q-item-section>
 
-              <q-item-section>{{ course.course_duration }}</q-item-section>
+              <q-item-section>{{ batch.status }}</q-item-section>
 
               <q-item-section class="text-center">{{
-                course.student_count
+                batch.student_count
               }}</q-item-section>
 
               <q-item-section class="text-center">
@@ -97,30 +95,27 @@
                   >
                     <q-list style="min-width: 100px">
                       <q-item
-                        v-if="currentUserPermissions.includes('9')"
                         clickable
-                        @click="
-                          selectIdAndPrompt(course.id, 'update', {
-                            specialization: course.specialization,
-                            duration: course.course_duration,
-                            type: course.type,
-                          })
-                        "
+                        :to="{ name: 'BatchDetails', params: { id: batch.id } }"
+                      >
+                        <q-item-section>View</q-item-section>
+                      </q-item>
+                      <q-item
+                        v-if="currentUserPermissions.includes('13')"
+                        clickable
+                        @click="selectIdAndPrompt(batch.id, 'update', batch)"
                       >
                         <q-item-section>Edit</q-item-section>
                       </q-item>
                       <!-- <q-item clickable>
-                        <q-item-section>Delete</q-item-section>
-                      </q-item> -->
+                      <q-item-section>Delete</q-item-section>
+                    </q-item> -->
                       <q-separator />
                       <q-item
-                        v-if="currentUserPermissions.includes('10')"
+                        v-if="currentUserPermissions.includes('14')"
                         clickable
                         @click="
-                          selectIdAndAskConfirmation(
-                            course.id,
-                            course.course_name
-                          )
+                          selectIdAndAskConfirmation(batch.id, batch.batch_name)
                         "
                       >
                         <q-item-section>Disable</q-item-section>
@@ -134,25 +129,25 @@
           </div>
         </div>
 
-        <div v-else-if="!filteredDCourses.length" class="text-center q-mt-lg">
+        <div v-else-if="!filteredDBatches.length" class="text-center q-mt-lg">
           No Courses Available
         </div>
 
         <div v-else>
-          <div v-for="(course, index) in filteredDCourses" :key="index">
+          <div v-for="(batch, index) in filteredDBatches" :key="index">
             <q-item>
               <q-item-section avatar>
                 {{ index + 1 }}
               </q-item-section>
 
-              <q-item-section>{{ course.type }}</q-item-section>
+              <q-item-section>{{ batch.batch_name }}</q-item-section>
 
-              <q-item-section>{{ course.specialization }}</q-item-section>
+              <q-item-section>{{ batch.course_specialization }}</q-item-section>
 
-              <q-item-section>{{ course.course_duration }}</q-item-section>
+              <q-item-section>{{ batch.status }}</q-item-section>
 
               <q-item-section class="text-center">{{
-                course.student_count
+                batch.batch_name
               }}</q-item-section>
 
               <q-item-section class="text-center">
@@ -164,30 +159,27 @@
                   >
                     <q-list style="min-width: 100px">
                       <q-item
-                        v-if="currentUserPermissions.includes('9')"
                         clickable
-                        @click="
-                          selectIdAndPrompt(course.id, 'update', {
-                            specialization: course.specialization,
-                            duration: course.course_duration,
-                            type: course.type,
-                          })
-                        "
+                        :to="{ name: 'BatchDetails', params: { id: batch.id } }"
+                      >
+                        <q-item-section>View</q-item-section>
+                      </q-item>
+                      <q-item
+                        v-if="currentUserPermissions.includes('13')"
+                        clickable
+                        @click="selectIdAndPrompt(batch.id, 'update', batch)"
                       >
                         <q-item-section>Edit</q-item-section>
                       </q-item>
                       <!-- <q-item clickable>
-                        <q-item-section>Delete</q-item-section>
-                      </q-item> -->
+                      <q-item-section>Delete</q-item-section>
+                    </q-item> -->
                       <q-separator />
                       <q-item
-                        v-if="currentUserPermissions.includes('10')"
+                        v-if="currentUserPermissions.includes('14')"
                         clickable
                         @click="
-                          selectIdAndAskConfirmation(
-                            course.id,
-                            course.course_name
-                          )
+                          selectIdAndAskConfirmation(batch.id, batch.batch_name)
                         "
                       >
                         <q-item-section>Enable</q-item-section>
@@ -202,39 +194,51 @@
         </div>
       </q-list>
 
-      <q-dialog v-model="addCoursePrompt" persistent>
+      <q-dialog v-model="addBatchPrompt" persistent>
         <q-card style="min-width: 350px">
           <q-card-section>
             <div class="text-h6">
-              {{ operation === 'add' ? 'Add new Course' : 'Update Course' }}
+              {{ operation === 'add' ? 'Add new Batch' : 'Update Batch' }}
             </div>
           </q-card-section>
 
           <q-card-section class="q-pt-none">
             <q-input
               dense
-              v-model.trim="courseName"
+              v-model.trim="batchName"
               autofocus
               type="text"
-              label="Course Name"
+              label="Batch Name"
+            />
+
+            <q-select
+              class="q-mt-lg"
+              v-model="course"
+              :options="courses"
+              label="Course"
+            />
+
+            <q-select
+              class="q-mt-lg"
+              v-model.trim="status"
+              :options="statusOptions"
+              label="Status"
             />
 
             <q-input
               class="q-mt-lg"
               dense
-              v-model.trim="courseDuration"
-              autofocus
-              type="text"
-              label="Course Duration"
+              v-model.trim="batchStartDate"
+              type="date"
+              hint="Start Date"
             />
 
             <q-input
               class="q-mt-lg"
               dense
-              v-model.trim="courseType"
-              autofocus
-              type="text"
-              label="Course Type"
+              v-model.trim="batchEndDate"
+              type="date"
+              hint="End Date"
             />
           </q-card-section>
 
@@ -244,7 +248,7 @@
               flat
               :label="operation == 'add' ? 'Add' : 'Update'"
               no-caps
-              @click="operation == 'add' ? addCourse() : updateCourse()"
+              @click="operation == 'add' ? addBatch() : updateBatch()"
             />
           </q-card-actions>
         </q-card>
@@ -255,7 +259,7 @@
         <q-card style="min-width: 350px">
           <q-card-section>
             <div class="text-h6">
-              {{ showDisabledCourses ? 'Enable Course?' : 'Disable course?' }}
+              {{ showDisabledBatches ? 'Enable Batch?' : 'Disable Batch?' }}
             </div>
           </q-card-section>
 
@@ -269,7 +273,7 @@
               flat
               label="Confirm"
               no-caps
-              @click="disableCourse(!showDisabledCourses)"
+              @click="disableBatch(!showDisabledBatches)"
             />
           </q-card-actions>
         </q-card>
@@ -289,21 +293,26 @@ export default {
 
       currentUserPermissions: [],
 
+      batches: [],
       courses: [],
-      filteredCourses: [],
-      dCourses: [],
-      filteredDCourses: [],
+      filteredBatches: [],
 
-      showDisabledCourses: false,
+      dBatches: [],
+      filteredDBatches: [],
+
+      showDisabledBatches: false,
       search: '',
 
-      addCoursePrompt: false,
-      courseName: '',
-      courseDuration: '',
-      courseType: '',
+      addBatchPrompt: false,
+      batchName: '',
+      course: '',
+      statusOptions: ['Ongoing', 'Not started'],
+      status: '',
+      batchStartDate: '',
+      batchEndDate: '',
 
       //to choose a course and operation
-      selectedCourseId: '',
+      selectedBatchId: '',
       operation: '',
 
       //to disable a course
@@ -312,10 +321,80 @@ export default {
   },
   methods: {
     ...mapActions('app', ['saveLog']),
-    async getCourses() {
+    async getBatches() {
       this.loaded = false;
-      this.filteredCourses = [];
+      this.filteredBatches = [];
+      const url = `${process.env.API_URL}/batch/get-batch`;
+      // console.log(url);
+      try {
+        let response = await this.$axios.get(url, {
+          headers: {
+            Authorization: localStorage.getItem('token'),
+          },
+        });
+        // console.log(response.data);
+        this.batches = [];
+        response.data.response.forEach(res => {
+          // console.log(res);
+          this.batches.push(res);
+        });
 
+        this.filteredBatches = this.batches;
+
+        this.loaded = true;
+        // this.permissions = response.data.response.map(res => {
+        //   console.log(res.id);
+        //   return {
+        //     id: res.id,
+        //     code: res.code,
+        //     group_by: res.group_by,
+        //     label: res.string,
+        //   };
+        // });
+      } catch (err) {
+        console.log(err.message);
+        this.loaded = true;
+      }
+    },
+
+    async getDBatches() {
+      this.loaded = false;
+      this.filteredDBatches = [];
+      const url = `${process.env.API_URL}/batch/get-disabled-batch`;
+      // console.log(url);
+      try {
+        let response = await this.$axios.get(url, {
+          headers: {
+            Authorization: localStorage.getItem('token'),
+          },
+        });
+        // console.log(response.data);
+        this.dBatches = [];
+        response.data.response.forEach(res => {
+          // console.log(res);
+          this.dBatches.push(res);
+        });
+
+        this.filteredDBatches = this.dBatches;
+
+        this.loaded = true;
+        // this.permissions = response.data.response.map(res => {
+        //   console.log(res.id);
+        //   return {
+        //     id: res.id,
+        //     code: res.code,
+        //     group_by: res.group_by,
+        //     label: res.string,
+        //   };
+        // });
+      } catch (err) {
+        console.log(err.message);
+        this.loaded = true;
+      }
+    },
+
+    async getCourses() {
+      // this.loaded = false;
       const url = `${process.env.API_URL}/course/get-course`;
       // console.log(url);
       try {
@@ -328,11 +407,12 @@ export default {
         this.courses = [];
         response.data.response.forEach(res => {
           console.log(res);
-          this.courses.push(res);
+          this.courses.push({
+            label: res.specialization,
+            value: res.id,
+          });
         });
-        console.log(this.courses);
-
-        this.filteredCourses = this.courses;
+        // console.log(this.courses);
 
         this.loaded = true;
         // this.permissions = response.data.response.map(res => {
@@ -346,49 +426,18 @@ export default {
         // });
       } catch (err) {
         console.log(err.message);
-        this.loaded = true;
+        // this.loaded = true;
       }
     },
 
-    async getDCourses() {
-      this.loaded = false;
-      this.filteredDCourses = [];
-      const url = `${process.env.API_URL}/course/get-disabled-course`;
-      // console.log(url);
-      try {
-        let response = await this.$axios.get(url, {
-          headers: {
-            Authorization: localStorage.getItem('token'),
-          },
-        });
-        console.log(response.data);
-        this.dCourses = [];
-        response.data.response.forEach(res => {
-          console.log(res);
-          this.dCourses.push(res);
-        });
-        console.log(this.courses);
-
-        this.filteredDCourses = this.dCourses;
-
-        this.loaded = true;
-        // this.permissions = response.data.response.map(res => {
-        //   console.log(res.id);
-        //   return {
-        //     id: res.id,
-        //     code: res.code,
-        //     group_by: res.group_by,
-        //     label: res.string,
-        //   };
-        // });
-      } catch (err) {
-        console.log(err.message);
-        this.loaded = true;
-      }
-    },
-
-    async addCourse() {
-      if (!this.courseName && !this.courseDuration)
+    async addBatch() {
+      if (
+        !this.batchName &&
+        !this.courseId &&
+        !this.status &&
+        !this.batchStartDate &&
+        !this.batchEndDate
+      )
         return this.$q.notify({
           type: 'negative',
           message: `Please enter course details`,
@@ -397,18 +446,21 @@ export default {
       this.$q.loading.show({
         spinner: QSpinnerClock,
         delay: 400,
-        message: 'Creating Course',
+        message: 'Adding Batch',
         spinnerColor: 'teal-1',
       });
-      const url = `${process.env.API_URL}/course/create-course`;
-      // console.log(url);
+
+      const url = `${process.env.API_URL}/batch/create-batch`;
+      console.log(this.course.value);
       try {
         let response = await this.$axios.post(
           url,
           {
-            course_name: this.courseName,
-            course_duration: this.courseDuration,
-            type: this.courseType,
+            batch_name: this.batchName,
+            course_id: this.course.value,
+            status: this.status,
+            start_date: this.batchStartDate,
+            end_date: this.batchEndDate,
           },
           {
             headers: {
@@ -423,32 +475,34 @@ export default {
         const log = {
           from: id,
           to: response.data.response.insertId,
-          type: 'course',
+          type: 'batch',
           message: `<a class="message-from" href="${
             window.location.href.split(window.location.pathname)[0]
           }/profile/${this.$store.state.userStore.userProfile.id}">${
             this.$store.state.userStore.userProfile.name
-          }</a> Added course ${this.courseName}`,
+          }</a> Added Batch ${this.batchName}`,
         };
         await this.saveLog(log);
 
-        this.courseName = '';
-        this.courseDuration = '';
-        this.courseType = '';
-        this.addCoursePrompt = false;
+        this.batchName = '';
+        this.courseId = '';
+        this.status = '';
+        this.batchStartDate = '';
+        this.batchEndDate = '';
+
+        this.addBatchPrompt = false;
 
         this.$q.loading.hide();
 
         this.$q.notify({
           type: 'positive',
-          message: `New course added successfully`,
+          message: `New batch added successfully`,
         });
 
-        this.getCourses();
+        this.getBatches();
       } catch (err) {
         console.log(err.message);
         this.$q.loading.hide();
-
         this.$q.notify({
           type: 'negative',
           message: `${err.message}`,
@@ -456,18 +510,31 @@ export default {
       }
     },
 
-    selectIdAndPrompt(id, operation, course) {
+    selectIdAndPrompt(id, operation, batch) {
       // console.log(id);
-      this.selectedCourseId = id;
-      this.courseName = course.specialization;
-      this.courseDuration = course.duration;
-      this.courseType = course.type;
+      this.selectedBatchId = id;
+      this.batchName = batch ? batch.batch_name : '';
+      this.course = batch
+        ? { label: batch.course_specialization, value: batch.course_id }
+        : '';
+      this.status = batch ? batch.status : '';
+      this.batchStartDate = batch ? batch.start_date : '';
+      this.batchEndDate = batch ? batch.end_date : '';
+
       this.operation = operation;
-      this.addCoursePrompt = true;
+      this.addBatchPrompt = true;
+
+      // this.getCourses();
     },
 
-    async updateCourse() {
-      if (!this.courseName && !this.courseDuration)
+    async updateBatch() {
+      if (
+        !this.batchName &&
+        !this.course &&
+        !this.status &&
+        !this.batchStartDate &&
+        !this.batchEndDate
+      )
         return this.$q.notify({
           type: 'negative',
           message: `Please enter course details`,
@@ -476,19 +543,22 @@ export default {
       this.$q.loading.show({
         spinner: QSpinnerClock,
         delay: 400,
-        message: 'Updating Course',
+        message: 'Updating Batch',
         spinnerColor: 'teal-1',
       });
-      const url = `${process.env.API_URL}/course/update-course`;
+
+      const url = `${process.env.API_URL}/batch/update-batch`;
       // console.log(url);
       try {
         let response = await this.$axios.post(
           url,
           {
-            id: this.selectedCourseId,
-            course_name: this.courseName,
-            course_duration: this.courseDuration,
-            type: this.courseType,
+            id: this.selectedBatchId,
+            batch_name: this.batchName,
+            course_id: this.course.value,
+            status: this.status,
+            start_date: this.batchStartDate,
+            end_date: this.batchEndDate,
           },
           {
             headers: {
@@ -498,40 +568,39 @@ export default {
         );
         console.log(response.data);
 
-        this.addCoursePrompt = false;
-
         const id = jwt_decode(localStorage.getItem('token')).id;
         console.log(id);
         const log = {
           from: id,
           to: this.selectedCourseId,
-          type: 'course',
+          type: 'batch',
           message: `<a class="message-from" href="${
             window.location.href.split(window.location.pathname)[0]
           }/profile/${this.$store.state.userStore.userProfile.id}">${
             this.$store.state.userStore.userProfile.name
-          }</a> Updated course ${this.courseName}`,
+          }</a> Updated batch ${this.batchName}`,
         };
         await this.saveLog(log);
 
-        this.$q.notify({
-          type: 'positive',
-          message: `Course Updated`,
-        });
+        this.batchName = '';
+        this.course = '';
+        this.status = '';
+        this.batchStartDate = '';
+        this.batchEndDate = '';
 
-        this.courseName = '';
-        this.courseDuration = '';
-        this.courseType = '';
-
-        // this.getCourses();
+        this.addBatchPrompt = false;
 
         this.$q.loading.hide();
 
-        this.getCourses();
+        this.$q.notify({
+          type: 'positive',
+          message: `Batch Updated`,
+        });
+
+        this.getBatches();
       } catch (err) {
         console.log(err.message);
         this.$q.loading.hide();
-
         this.$q.notify({
           type: 'negative',
           message: `${err.message}`,
@@ -540,24 +609,26 @@ export default {
     },
 
     selectIdAndAskConfirmation(id, name) {
-      this.selectedCourseId = id;
-      this.courseName = name;
+      this.selectedBatchId = id;
+      this.batchName = name;
       this.confirmationPrompt = true;
     },
 
-    async disableCourse(disable) {
+    async disableBatch(disabled) {
+      console.log(disabled, this.selectedBatchId);
       this.$q.loading.show({
         spinner: QSpinnerClock,
         delay: 400,
         // message: 'Disabling Course',
         spinnerColor: 'teal-1',
       });
-      const url = `${process.env.API_URL}/course/disabled-course/${this.selectedCourseId}`;
+      const url = `${process.env.API_URL}/batch/disabled-batch`;
       try {
         let response = await this.$axios.post(
           url,
           {
-            disabled: disable,
+            id: this.selectedBatchId,
+            disabled: disabled,
           },
           {
             headers: {
@@ -580,26 +651,25 @@ export default {
             window.location.href.split(window.location.pathname)[0]
           }/profile/${this.$store.state.userStore.userProfile.id}">${
             this.$store.state.userStore.userProfile.name
-          }</a> Disabled Course ${this.courseName}`,
+          }</a> Disabled Batch ${this.batchName}`,
         };
         await this.saveLog(log);
 
-        this.courseName = '';
-        this.selectedCourseId = '';
+        this.batchName = '';
+        this.selectedBatchId = '';
+
+        this.$q.loading.hide();
 
         this.$q.notify({
           type: 'positive',
-          message: `Success `,
+          message: `Success`,
         });
 
-        this.$q.loading.hide();
-
-        this.getCourses();
-        this.getDCourses();
+        await this.getBatches();
+        await this.getDBatches();
       } catch (err) {
         console.log(err.message);
         this.$q.loading.hide();
-
         this.$q.notify({
           type: 'negative',
           message: `${err.message}`,
@@ -610,29 +680,29 @@ export default {
 
   watch: {
     search() {
-      // console.log(this.showDisabledCourses);
-      if (!this.showDisabledCourses)
-        this.filteredCourses = this.courses.filter(course => {
-          return course.specialization
+      if (!this.showDisabledBatches)
+        this.filteredBatches = this.batches.filter(batch => {
+          return batch.batch_name
             .toLowerCase()
             .includes(this.search.toLowerCase());
         });
       else
-        this.filteredDCourses = this.dCourses.filter(course => {
-          return course.specialization
+        this.filteredDBatches = this.dBatches.filter(batch => {
+          return batch.batch_name
             .toLowerCase()
             .includes(this.search.toLowerCase());
         });
     },
   },
-  mounted() {
-    console.log('courses page');
+  async mounted() {
+    console.log('batches page');
     this.currentUserPermissions = this.$store.getters[
       'userStore/getUserDetails'
     ].permission;
     console.log(this.currentUserPermissions);
-    this.getCourses();
-    this.getDCourses();
+    await this.getBatches();
+    await this.getDBatches();
+    await this.getCourses();
   },
 };
 </script>
