@@ -44,9 +44,15 @@ const router = new VueRouter({
 router.beforeEach(async (to, from, next) => {
   console.log(to);
   const requiresAuth = to.matched.some(x => x.meta.requiresAuth);
-  // if (localStorage.getItem('token')) await store.dispatch('userStore/getUser');
+  if (
+    localStorage.getItem('token') &&
+    !store.getters['userStore/getUserDetails']
+  )
+    await store.dispatch('userStore/getUser');
 
-  const loggedIn = store.state.userStore.loggedIn;
+  // const loggedIn = localStorage.getItem('token');
+  const loggedIn = store.state.userStore.userProfile;
+
   console.log(to.path, loggedIn);
 
   if (to.path == '/login' && loggedIn) {
