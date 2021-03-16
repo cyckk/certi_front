@@ -68,15 +68,24 @@
             dense
             v-model.trim="loginForm.email"
             autofocus
-            @keyup.enter="prompt = false"
             type="email"
             label="Email Address"
           />
         </q-card-section>
 
+        <q-card-section class="q-pt-none">
+          <q-input
+            dense
+            v-model.trim="loginForm.password"
+            autofocus
+            type="email"
+            label="Password"
+          />
+        </q-card-section>
+
         <q-card-actions align="right" class="text-primary">
           <q-btn flat label="Cancel" no-caps v-close-popup />
-          <q-btn flat label="Reset" no-caps />
+          <q-btn @click="resetPassword" flat label="Reset" no-caps />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -87,6 +96,7 @@
 // import Notify from '@/components/Notify.vue';
 // import Vue from 'vue';
 import jwt_decode from 'jwt-decode';
+import { QSpinnerClock } from 'quasar';
 
 import { mapActions } from 'vuex';
 
@@ -115,6 +125,17 @@ export default {
       this.showLogin = !this.showLogin;
     },
     async signIn() {
+      if (!this.loginForm.email && !this.loginForm.password)
+        this.$q.notify({
+          type: 'negative',
+          message: `Please enter details`,
+        });
+      this.$q.loading.show({
+        spinner: QSpinnerClock,
+        delay: 400,
+        message: 'Loging in',
+        spinnerColor: 'teal-1',
+      });
       let response = await this.login({
         email: this.loginForm.email,
         password: this.loginForm.password,
@@ -125,29 +146,35 @@ export default {
       const id = jwt_decode(localStorage.getItem('token')).id;
       console.log('userid ', id);
 
-      const log = {
-        to: id,
-        from: id,
-        type: 'user',
-        message: `<a class="message-from" href="${
-          window.location.href.split(window.location.pathname)[0]
-        }/profile/${this.$store.state.userStore.userProfile.id}">${
-          this.$store.state.userStore.userProfile.name
-        }</a> Logged In`,
-      };
+      if (response == '') {
+        const log = {
+          to: id,
+          from: id,
+          type: 'user',
+          message: `<a class="message-from" href="${
+            window.location.href.split(window.location.pathname)[0]
+          }/profile/${this.$store.state.userStore.userProfile.id}">${
+            this.$store.state.userStore.userProfile.name
+          }</a> Logged In`,
+        };
 
-      this.saveLog(log);
+        await this.saveLog(log);
 
-      if (response !== '')
-        this.$q.notify({
-          type: 'negative',
-          message: `${response}`,
-        });
-      else
         this.$q.notify({
           type: 'positive',
           message: `Logged In`,
         });
+
+        this.$q.loading.hide();
+
+        this.$router.push('/');
+      } else {
+        this.$q.loading.hide();
+        this.$q.notify({
+          type: 'negative',
+          message: `${response}`,
+        });
+      }
     },
 
     togglePasswordReset() {
@@ -157,18 +184,40 @@ export default {
       // this.error = '';
     },
 
-    // notify(msg, color) {
-    //   let ComponentClass = Vue.extend(Notify);
-    //   let instance = new ComponentClass({
-    //     propsData: {
-    //       msg: msg,
-    //       color: color,
-    //     },
-    //   });
-    //   instance.$mount();
+    async resetPassword() {
+      this.$q.loading.show({
+        spinner: QSpinnerClock,
+        delay: 400,
+        message: 'Resetting password',
+        spinnerColor: 'teal-1',
+      });
+      const url = `${process.env.API_URL}/user/forget-password`;
+      try {
+        const response = await this.$axios.post(url, {
+          email: this.loginForm.email,
+          password: this.loginForm.password,
+        });
 
-    //   this.$refs.container.appendChild(instance.$el);
-    // },
+        console.log(response.data);
+
+        this.$q.loading.hide();
+
+        this.showPasswordReset = false;
+
+        this.$q.notify({
+          type: 'positive',
+          message: `Password reset`,
+        });
+      } catch (err) {
+        console.log(err.message);
+        this.$q.loading.hide();
+
+        this.$q.notify({
+          type: 'negative',
+          message: `${err.message}`,
+        });
+      }
+    },
   },
 
   components: {
@@ -179,9 +228,9 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 * {
-  margin: 0;
+  // margin: 0;
   box-sizing: border-box;
 }
 .container {
@@ -213,37 +262,6 @@ form {
       display: block;
       margin-bottom: 10px;
     }
-
-    // input {
-    //   outline: none;
-    //   font-size: 14px;
-    //   height: 40px;
-    //   border: 1px solid rgba(187, 184, 184, 0.774);
-    //   border-radius: 3px;
-    //   // background-color: red;
-    //   padding: 7px 10px;
-    // }
-
-    // .input-icon {
-    //   position: absolute;
-    //   bottom: 0;
-    //   right: 0;
-    //   width: 30px;
-    //   height: 40px;
-    //   padding: 10px;
-    //   font-weight: 700;
-    //   background-color: rgba(236, 243, 242, 0.842);
-    //   border: 1px solid rgba(187, 184, 184, 0.774);
-    //   border-top-right-radius: 3px;
-    //   border-bottom-right-radius: 3px;
-    //   text-align: center;
-    //   color: black;
-    //   cursor: pointer;
-
-    //   &:hover {
-    //     background-color: rgba(236, 243, 242, 0.952);
-    //   }
-    // }
   }
 }
 
@@ -258,7 +276,7 @@ form {
   .buttons {
     display: flex;
     margin-top: 15px;
-    justify-content: end;
+    justify-content: flex-end;
 
     button {
       // margin-top: 10px;
