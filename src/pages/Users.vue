@@ -1,10 +1,10 @@
 <template>
-  <q-page class="q-mt-xl q-pa-lg">
+  <q-page class="q-mt-xl q-pa-lg row justify-center">
     <!-- Skeleton -->
-    <div class="q-pa-md" v-if="!loaded">
+    <div class="col-12 col-md-9 q-pa-md" v-if="!loaded">
       <div class="row justify-between items-center q-mb-lg">
-        <q-skeleton class="col-9" type="QInput" />
-        <q-skeleton type="QBtn" />
+        <q-skeleton class="col-9" type="QInput" height="35px" />
+        <!-- <q-skeleton type="QBtn" /> -->
         <q-skeleton type="QBtn" />
       </div>
       <q-list bordered class=" row-reverse justify-between">
@@ -15,7 +15,7 @@
     <!-- end -->
 
     <!-- Real page -->
-    <div v-else>
+    <div v-else class="col-12 col-md-9">
       <div class="row justify-between items-center q-mb-lg q-gutter-lg">
         <q-input
           dense
@@ -31,6 +31,7 @@
         </q-input>
         <!-- <q-btn color="primary" label="Filter"></q-btn> -->
         <q-btn
+          v-if="currentUserPermissions.includes('3')"
           color="primary"
           label="Add"
           :to="{ name: 'RegisterUser' }"
@@ -38,7 +39,7 @@
       </div>
       <q-list bordered class=" row-reverse justify-between bg-grey-3">
         <div>
-          <q-item clickable v-ripple>
+          <q-item clickable v-ripple class="text-bold">
             <q-item-section avatar>
               #
             </q-item-section>
@@ -49,7 +50,7 @@
 
             <q-item-section>Email</q-item-section>
 
-            <q-item-section>Actions</q-item-section>
+            <q-item-section class="text-center">Actions</q-item-section>
           </q-item>
           <q-separator></q-separator>
         </div>
@@ -74,13 +75,9 @@
                 >
                   <q-list style="min-width: 100px">
                     <q-item
+                      v-if="currentUserPermissions.includes('4')"
                       clickable
-                      @click="
-                        selectIdAndPrompt(user.id, 'update', {
-                          name: user.Name,
-                          duration: user.course_duration,
-                        })
-                      "
+                      :to="{ name: 'RegisterUser', params: { id: user.id } }"
                     >
                       <q-item-section>Edit</q-item-section>
                     </q-item>
@@ -89,6 +86,7 @@
                     </q-item> -->
                     <q-separator />
                     <q-item
+                      v-if="currentUserPermissions.includes('4')"
                       clickable
                       @click="selectIdAndAskConfirmation(user.id, user.Name)"
                     >
@@ -102,47 +100,6 @@
           <q-separator></q-separator>
         </div>
       </q-list>
-
-      <q-dialog v-model="addCoursePrompt" persistent>
-        <q-card style="min-width: 350px">
-          <q-card-section>
-            <div class="text-h6">
-              {{ operation === 'add' ? 'Add new Course' : 'Update Course' }}
-            </div>
-          </q-card-section>
-
-          <q-card-section class="q-pt-none">
-            <q-input
-              dense
-              v-model.trim="userName"
-              autofocus
-              @keyup.enter="prompt = false"
-              type="email"
-              label="Course Name"
-            />
-
-            <q-input
-              class="q-mt-lg"
-              dense
-              v-model.trim="courseDuration"
-              autofocus
-              @keyup.enter="prompt = false"
-              type="email"
-              label="Course Duration"
-            />
-          </q-card-section>
-
-          <q-card-actions align="right" class="text-primary">
-            <q-btn flat label="Cancel" no-caps v-close-popup />
-            <q-btn
-              flat
-              :label="operation == 'add' ? 'Add' : 'Update'"
-              no-caps
-              @click="operation == 'add' ? addUser() : updateUser()"
-            />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
 
       <!-- confirmation prompt to disable a course -->
       <q-dialog v-model="confirmationPrompt" persistent>
@@ -174,6 +131,9 @@ export default {
   data() {
     return {
       loaded: false,
+
+      currentUserPermissions: [],
+
       users: [],
       filteredUsers: [],
       search: '',
@@ -228,52 +188,6 @@ export default {
       }
     },
 
-    async addUser() {
-      const url = `${process.env.API_URL}/course/create-course`;
-      // console.log(url);
-      try {
-        let response = await this.$axios.post(
-          url,
-          {
-            course_name: this.courseName,
-            course_duration: this.courseDuration,
-          },
-          {
-            headers: {
-              Authorization: localStorage.getItem('token'),
-            },
-          }
-        );
-        console.log(response.data.response);
-
-        this.courseName = '';
-        this.courseDuration = '';
-        this.addCoursePrompt = false;
-
-        const id = jwt_decode(localStorage.getItem('token')).id;
-        console.log(id);
-        const log = {
-          from: id,
-          to: id,
-          message: 'Created course',
-        };
-        await this.saveLog(log);
-
-        this.$q.notify({
-          type: 'positive',
-          message: `New course added successfully`,
-        });
-
-        this.getUsers();
-      } catch (err) {
-        console.log(err.message);
-        this.$q.notify({
-          type: 'negative',
-          message: `${err.message}`,
-        });
-      }
-    },
-
     selectIdAndPrompt(id, operation, course) {
       // console.log(id);
       this.selectedCourseId = id;
@@ -281,56 +195,6 @@ export default {
       this.courseDuration = course.duration;
       this.operation = operation;
       this.addCoursePrompt = true;
-    },
-
-    async updateUser() {
-      const url = `${process.env.API_URL}/course/update-course`;
-      // console.log(url);
-      try {
-        let response = await this.$axios.post(
-          url,
-          {
-            id: this.selectedCourseId,
-            course_name: this.courseName,
-            course_duration: this.courseDuration,
-          },
-          {
-            headers: {
-              Authorization: localStorage.getItem('token'),
-            },
-          }
-        );
-        console.log(response.data);
-
-        this.courseName = '';
-        this.courseDuration = '';
-
-        this.addCoursePrompt = false;
-
-        this.$q.notify({
-          type: 'positive',
-          message: `Course Updated`,
-        });
-
-        const id = jwt_decode(localStorage.getItem('token')).id;
-        console.log(id);
-        const log = {
-          from: id,
-          to: id,
-          message: 'Edited course',
-        };
-        await this.saveLog(log);
-
-        // this.getusers();
-
-        this.getUsers();
-      } catch (err) {
-        console.log(err.message);
-        this.$q.notify({
-          type: 'negative',
-          message: `${err.message}`,
-        });
-      }
     },
 
     selectIdAndAskConfirmation(id, name) {
@@ -373,8 +237,15 @@ export default {
         console.log(id);
         const log = {
           from: id,
-          to: id,
-          message: `${this.$store.state.userStore.userProfile.name} Disabled User ${this.userName}`,
+          to: this.selectedUserId,
+          type: 'user',
+          message: `<a class="message-from" href="${
+            window.location.href.split(window.location.pathname)[0]
+          }/profile/${this.$store.state.userStore.userProfile.id}">${
+            this.$store.state.userStore.userProfile.name
+          }</a> Disabled User <a class="message-from" href="${
+            window.location.href.split(window.location.pathname)[0]
+          }/profile/${this.selectedUserId}">${this.userName}</a> `,
         };
         await this.saveLog(log);
 
@@ -401,6 +272,9 @@ export default {
   },
   mounted() {
     console.log('users page');
+    this.currentUserPermissions = this.$store.getters[
+      'userStore/getUserDetails'
+    ].permission;
     this.getUsers();
   },
 };
