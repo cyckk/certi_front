@@ -23,7 +23,7 @@ export async function login({ dispatch }, payload) {
     // await dispatch('app','saveLog',{})
     console.log(localStorage.getItem('token'));
     await dispatch('getUser');
-    router.push('/');
+    // router.push('/');
 
     return '';
   } catch (err) {

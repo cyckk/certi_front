@@ -12,6 +12,7 @@ export async function saveLog({}, payload) {
         sent_from: payload.from,
         sent_to: payload.to,
         message: payload.message,
+        type: payload.type,
       },
       {
         headers: {
