@@ -21,7 +21,7 @@ module.exports = function(/* ctx */) {
     boot: ['axios'],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
-    css: ['app.scss'],
+    css: ['app.scss', 'styles.scss'],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
@@ -98,7 +98,7 @@ module.exports = function(/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Notify'],
+      plugins: ['Notify', 'Loading'],
     },
 
     // animations: 'all', // --- includes all animations

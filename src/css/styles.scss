@@ -1,0 +1,39 @@
+/* You can add global styles to this file, and also import other style files */
+
+.badge-danger {
+  background-color: #e73f3f !important ;
+}
+
+.badge-success {
+  background-color: #34c38f !important;
+}
+
+.badge {
+  font-size: 8px;
+  color: #ffffff;
+  border: none;
+}
+.success {
+  background-color: #85dbbc !important;
+  color: white;
+}
+.text {
+  text-transform: capitalize !important;
+}
+
+// Red:-#f46a6a
+// Green:-#34c38f
+// Blue:-#5b73e8
+// Grey:-#74788d
+// Black:-#343a40
+// Yellow:-#f1b44c
+
+.font {
+  // font-family: "Dancing Script", cursive;
+  font-family: "Parisienne", cursive;
+  font-size: 30px;
+}
+
+.font-1 {
+  font-size: 36px !important;
+}
