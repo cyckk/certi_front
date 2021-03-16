@@ -39,8 +39,8 @@
     <!-- end -->
 
     <!-- Real page -->
-    <div v-else class="row justify-start q-gutter-xl">
-      <q-card class="col-10 col-md-6 q-pa-xl ">
+    <div v-else class="row justify-center q-gutter-xl">
+      <q-card class="col-10 col-md-6 q-pa-xl">
         <q-item>
           <q-item-section avatar>
             <q-avatar size="150px">
@@ -50,9 +50,9 @@
           </q-item-section>
 
           <q-item-section>
-            <q-item-label class="text-h4">{{ userProfile.name }}</q-item-label>
+            <q-item-label class="text-h4">{{ userProfile.Name }}</q-item-label>
             <q-item-label caption> {{ userProfile.email }}</q-item-label>
-            <q-item-label v-if="!id" class="q-mt-xl"
+            <q-item-label class="q-mt-xl"
               ><q-btn
                 class="q-mt-md"
                 padding="0 xs"
@@ -65,7 +65,7 @@
             ></q-item-label>
           </q-item-section>
         </q-item>
-        <!-- {{ userProfile }} -->
+        {{ userProfile }}
         <div class="row justify-between items-center q-mb-lg"></div>
         <q-list bordered class=" row-reverse justify-between bg-grey-3">
           <!-- <div>
@@ -98,6 +98,23 @@
         </div> -->
         </q-list>
 
+        <q-expansion-item
+          group="somegroup"
+          icon="explore"
+          label="Marks"
+          default-opened
+          header-class="text-subtitle2"
+        >
+          <q-card>
+            <q-card-section>
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quidem,
+              eius reprehenderit eos corrupti commodi magni quaerat ex numquam,
+              dolorum officiis modi facere maiores architecto suscipit iste
+              eveniet doloribus ullam aliquid.
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
+
         <q-btn
           @click="showActivity"
           class="q-mt-lg"
@@ -124,8 +141,29 @@
                 :key="index"
                 :subtitle="new Date(log.created_at).toLocaleString()"
               >
-                <!-- {{ log.message }} -->
+                {{ log.message }}
                 <div v-html="log.message" class="log"></div>
+              </q-timeline-entry>
+
+              <q-timeline-entry
+                title="Event Title"
+                subtitle="February 21, 1986"
+                icon="delete"
+              >
+                <div>
+                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                  laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+                  irure dolor in reprehenderit in voluptate velit esse cillum
+                  dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+                  cupidatat non proident, sunt in culpa qui officia deserunt
+                  mollit anim id est laborum.
+                </div>
+              </q-timeline-entry>
+
+              <q-timeline-entry heading>
+                November, 2017
               </q-timeline-entry>
             </q-timeline>
           </q-scroll-area>
@@ -210,10 +248,11 @@ export default {
     };
   },
   methods: {
-    async getUserProfile() {
+    async getStudentProfile() {
       this.loaded = false;
       let url;
-      if (this.id) url = `${process.env.API_URL}/user/get-user-id/${this.id}`;
+      if (this.id)
+        url = `${process.env.API_URL}/student/get-student-info/${this.id}`;
       else url = `${process.env.API_URL}/user/get-user`;
       try {
         let response = await this.$axios.get(url, {
@@ -223,22 +262,8 @@ export default {
         });
         console.log(response.data.response);
         this.userProfile = response.data.response[0];
-        // response.data.data.forEach(res => {
-        //   console.log(res);
-        //   this.users.push(res);
-        // });
-        // console.log(this.users);
 
         this.loaded = true;
-        // this.permissions = response.data.response.map(res => {
-        //   console.log(res.id);
-        //   return {
-        //     id: res.id,
-        //     code: res.code,
-        //     group_by: res.group_by,
-        //     label: res.string,
-        //   };
-        // });
       } catch (err) {
         console.log(err.message);
         this.loaded = true;
@@ -370,7 +395,7 @@ export default {
         this.name = '';
         this.email = '';
 
-        if (this.id) this.getUserProfile();
+        if (this.id) this.getStudentProfile();
         else this.getMyProfile();
 
         this.$q.notify({
@@ -396,7 +421,7 @@ export default {
     this.id = this.$route.params.id;
     console.log(this.id);
 
-    if (this.id) this.getUserProfile();
+    if (this.id) this.getStudentProfile();
     else this.getMyProfile();
 
     // this.getLogs();
